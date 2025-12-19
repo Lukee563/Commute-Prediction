@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from model import train_xgboost
+from XGBoost import train_xgboost
+from regression import train_linear_regression
 from data_prep import preprocess_data
 
 # Pull TSV data from data.tsv and save to variable
@@ -14,8 +15,14 @@ results = results[results.Actual != 0]
 results['ape'] = abs(results['error']) / results['Actual']
 
 #Accuracy Metric
-print(1 - results['ape'].mean())
+print(round(1 - results['ape'].mean(),3))
 
 results.to_csv('results.csv', index=False)
 
+model,results = train_linear_regression(data)
+results['error'] = results['Actual'] - results['Predicted']
+results = results[results.Actual != 0]
+results['ape'] = abs(results['error']) / results['Actual']
 
+#Accuracy Metric
+print(round(1 - results['ape'].mean(),3))

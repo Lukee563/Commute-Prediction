@@ -12,7 +12,7 @@ def preprocess_data(file_path):
     data['time'] = data['dtime'] - data['otime']
 
     # Remove outliers 
-    data = data[(data['time'] < 150) & (data['time'] > 30)]
+    data = data[(data['time'] < 150) & (data['time'] > 40)]
     data = data[data['age'] < 100]
 
     # Define categorical variables
@@ -52,6 +52,6 @@ def preprocess_data(file_path):
     # Add target column for your XGB function
     processed = X.copy()
     processed['target'] = y
-    processed['dtime'] = data['dtime']   
+    processed['otime'] = data['otime']
 
     return processed
