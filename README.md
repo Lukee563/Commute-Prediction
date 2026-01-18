@@ -18,15 +18,20 @@ $$\text{Lasso: } \min_{\beta} \sum_{i=1}^{n} (y_i - X_i \beta)^2 + \lambda \sum_
 $$\text{Ridge: } \min_{\beta} \sum_{i=1}^{n} (y_i - X_i \beta)^2 + \lambda \sum_{j=1}^{p} \beta_j^2$$
 
 * **Feature Selection:** Lasso successfully zeroed out less relevant features, isolating travel mode and county-pair interactions as the primary predictors.
-* **Results:** Both models achieved an Out-of-Sample (OOS) $R^2$ of approximately **0.28**, performing moderately better than a null baseline but limited by the linear functional form.
+* **Results:** Both models achieved an Out-of-Sample (OOS) $R^2$ of approximately **0.15**, performing moderately better than a null baseline but limited by the linear functional form.
 
+* **Final Feature Set:** After writing my initial paper, I have heavily modified the feature set to simulate actual work commutes, primarily be setting strict guidelines as to what can be considered a moderate commute (20 - 150 minutes), reducing noise and simplifying analysis. 
 ### 2. Non-Parametric Random Forest
 I deployed a **Random Forest** ensemble consisting of 500 trees with a minimum node size of 10. Unlike the linear models, this approach does not assume a specific functional form for the relationship between variables like income, start time, or geographic origin.
 
-* **Performance:** The Random Forest achieved an OOS $R^2$ of **0.3329**.
-* **Interpretation:** The 5% improvement over parametric models suggests that the true data-generating process contains non-linearities (e.g., peak-hour congestion effects) that linear models fail to capture.
+* **Performance:** The Random Forest achieved an OOS $R^2$ of **0.2343**.
+* **Interpretation:** The 4 percentage point improvement over parametric models suggests that the true data-generating process contains non-linearities (e.g., peak-hour congestion effects) that linear models fail to capture.
 
+### 3. XGBoost, a Gradient Boosting Ensemble 
+After writing my analysis, I decided to implement XGboost as a final attempt at maximizing predicitive performance after poor predictive capability iwth Lasso/Ridge and Random Forest models. 
 
+* **Performance:** The XGBoost achieved an OOS $R^2$ of **0.646**.
+* **Interpretation:** This suggests that the commute duration in the 1990 Bay Area data is not just non-linear, but involves highly complex additive interactions that Gradient Boosting is uniquely suited to optimize via gradient descent in the functional space.
 
 ## Data & Feature Engineering
 * **Source:** 1990 Bay Area Travel Survey.
