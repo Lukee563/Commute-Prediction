@@ -2,6 +2,7 @@
 ### Supervised Learning: Parametric Regularization vs. Non-Parametric Ensemble Methods
 
 Author: Luke Catalano
+
 Affiliation: University of California, Santa Cruz, M.S. Quantitative Economics & Finance
 
 ## Research Overview
