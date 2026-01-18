@@ -1,6 +1,9 @@
 # Predicting the Commutes of 1990 San Francisco Bay Area Drivers
 ### Supervised Learning: Parametric Regularization vs. Non-Parametric Ensemble Methods
 
+Author: Luke Catalano
+Affiliation: University of California, Santa Cruz, M.S. Quantitative Economics & Finance
+
 ## Research Overview
 This project applies machine learning techniques to predict individual commute durations using the **1990 Bay Area Travel Survey**. The core objective is to compare the predictive accuracy of parametric models constrained by linearity (Lasso and Ridge) against non-parametric models (Random Forest) to determine the extent of non-linear interactions in urban transportation data.
 
