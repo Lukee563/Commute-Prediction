@@ -32,7 +32,7 @@ I deployed a **Random Forest** ensemble consisting of 500 trees with a minimum n
 * **Interpretation:** The 4 percentage point improvement over parametric models suggests that the true data-generating process contains non-linearities (e.g., peak-hour congestion effects) that linear models fail to capture.
 
 ### 3. XGBoost, a Gradient Boosting Ensemble 
-After writing my analysis, I decided to implement XGboost as a final attempt at maximizing predicitive performance after poor predictive capability iwth Lasso/Ridge and Random Forest models. 
+After writing my analysis, I decided to implement XGboost as a final attempt to maximize predicitive performance after poor predictive capability with Lasso/Ridge and Random Forest models. 
 
 * **Performance:** The XGBoost achieved an OOS $R^2$ of **0.646**.
 * **Interpretation:** This suggests that the commute duration in the 1990 Bay Area data is not just non-linear, but involves highly complex additive interactions that Gradient Boosting is uniquely suited to optimize via gradient descent in the functional space.
