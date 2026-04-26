@@ -1,54 +1,94 @@
-# Predicting the Commutes of San Francisco Bay Area Drivers
-### Supervised Learning: Parametric Regularization vs. Non-Parametric Ensemble Methods
+# Predicting Bay Area Commute Durations
+**Supervised Learning | Parametric vs. Non-Parametric Methods | Python**
 
-Author: Luke Catalano
+---
 
-Affiliation: University of California, Santa Cruz, M.S. Quantitative Economics & Finance
+## Overview
 
-## Research Overview
-This project applies machine learning techniques to predict individual commute durations using the **1990 Bay Area Travel Survey**. The core objective is to compare the predictive accuracy of parametric models constrained by linearity (Lasso and Ridge) against non-parametric models (Random Forest) to determine the extent of non-linear interactions in urban transportation data.
+This project applies supervised machine learning to predict individual commute durations using the **1990 Bay Area Travel Survey**. The core question is whether non-parametric ensemble methods capture meaningful non-linearities in urban transportation data that regularized linear models cannot, and by how much.
 
-## Economic & Practical Motivation
-* **Infrastructure Planning:** Accurate trip-time estimates are vital for civil engineers and urban planners to manage highway capacity and identify geographic bottlenecks.
-* **Labor Market Dynamics:** Commute times act as a "tax" on labor; understanding these determinants helps model worker decisions regarding residential location versus employment centers.
-* **Algorithmic Benchmarking:** Testing whether modern non-parametric methods significantly outperform traditional econometric specifications in high-dimensional spatial data.
+Three model classes are compared in sequence: **Lasso (L1)** and **Ridge (L2)** regularized regression, a **Random Forest** ensemble, and a **gradient-boosted XGBoost** model. The progression tests the bias-variance tradeoff in a high-dimensional spatial setting, and the performance gap between approaches turns out to be substantial.
+
+---
+
+## Key Results
+
+| Model | OOS R² | Notes |
+|---|---|---|
+| Lasso (L1) | 0.15 | 20-fold CV, one-hot county pairs |
+| Ridge (L2) | 0.15 | 20-fold CV |
+| Random Forest | 0.23 | 1,000 trees, min leaf = 10 |
+| **XGBoost** | **0.646** | Best model - see below |
+
+**XGBoost out-of-sample performance on held-out test set (n = 3,035):**
+- Accuracy (1 − MAPE): **64.6%**
+- Mean absolute error: **16.6 minutes**
+- Median absolute error: **11.9 minutes**
+
+The 40+ percentage point gap between linear and gradient-boosted models indicates the true data-generating process contains highly complex additive interactions, particularly peak-hour congestion effects and county-pair spatial friction, that linear functional forms cannot recover.
+
+---
 
 ## Methodology
 
-### 1. Parametric Regularized Regression
-To address high-dimensional features and potential multicollinearity (especially between geographic indicators), I implemented **Lasso (L1)** and **Ridge (L2)** regressions. These models introduce a penalty term to the OLS objective function:
+**Target variable:** Log-transformed commute duration (minutes), restricted to work commutes between 20 and 150 minutes to remove noise from non-standard trips.
 
-$$\text{Lasso: } \min_{\beta} \sum_{i=1}^{n} (y_i - X_i \beta)^2 + \lambda \sum_{j=1}^{p} |\beta_j|$$
-$$\text{Ridge: } \min_{\beta} \sum_{i=1}^{n} (y_i - X_i \beta)^2 + \lambda \sum_{j=1}^{p} \beta_j^2$$
+**Feature engineering:**
+- Departure time encoded as cyclical features (`hour_sin`, `hour_cos`) to capture peak-hour effects without discontinuity at midnight
+- Home × work county interactions as route identifiers
+- Categorical encoding for travel mode, occupation, vehicle type, business type, and trip number
 
-* **Feature Selection:** Lasso successfully zeroed out less relevant features, isolating travel mode and county-pair interactions as the primary predictors.
-* **Results:** Both models achieved an Out-of-Sample (OOS) $R^2$ of approximately **0.15**, performing moderately better than a null baseline but limited by the linear functional form.
+**Model details:**
+- Lasso/Ridge: 20-fold cross-validation for λ selection; StandardScaler applied; one-hot encoding with county-pair interaction terms
+- Random Forest: 1,000 trees, `min_samples_leaf=10`, parallelized
+- XGBoost: 1,000 estimators, L1 + L2 regularization (`alpha=0.5`, `lambda=1.5`), row/column subsampling at 0.7, histogram-based tree method
 
-* **Final Feature Set:** After writing my initial paper, I have heavily modified the feature set to simulate actual work commutes, primarily be setting strict guidelines as to what can be considered a moderate commute (20 - 150 minutes), reducing noise and simplifying analysis. 
-### 2. Non-Parametric Random Forest
-I deployed a **Random Forest** ensemble consisting of 500 trees with a minimum node size of 10. Unlike the linear models, this approach does not assume a specific functional form for the relationship between variables like income, start time, or geographic origin.
+**Key findings:**
+- Spatial friction (home-work county pairs) was the strongest predictor class across all models
+- Carpooling was associated with only ~3.5 additional minutes, contrary to the prior expectation that pickup coordination would meaningfully extend trip time
+- The Random Forest's modest improvement over linear models (+8 pp) versus XGBoost's dramatic improvement (+43 pp) suggests gradient boosting's sequential error-correction is particularly well-suited to the additive structure of commute data
 
-* **Performance:** The Random Forest achieved an OOS $R^2$ of **0.2343**.
-* **Interpretation:** The 4 percentage point improvement over parametric models suggests that the true data-generating process contains non-linearities (e.g., peak-hour congestion effects) that linear models fail to capture.
+---
 
-### 3. XGBoost, a Gradient Boosting Ensemble 
-After writing my analysis, I decided to implement XGboost as a final attempt to maximize predicitive performance after poor predictive capability with Lasso/Ridge and Random Forest models. 
+## Repository Structure
 
-* **Performance:** The XGBoost achieved an OOS $R^2$ of **0.646**.
-* **Interpretation:** This suggests that the commute duration in the 1990 Bay Area data is not just non-linear, but involves highly complex additive interactions that Gradient Boosting is uniquely suited to optimize via gradient descent in the functional space.
+```
+├── code/
+│   ├── data/
+│   │   └── data.tsv              # 1990 Bay Area Travel Survey (raw)
+│   ├── data_prep.py              # Cleaning, feature engineering, log transform
+│   ├── main.py                   # Entry point, runs XGBoost pipeline end-to-end
+│   ├── XGBoost.py                # XGBoost model definition and training
+│   ├── models.py                 # Lasso, Ridge, and Random Forest comparison
+│   ├── regression.py             # Baseline linear regression
+│   ├── eda.py                    # Exploratory data analysis and scatter plots
+│   └── results_interpreted.csv  # XGBoost predictions on test set (actual vs. predicted minutes)
+├── Commute_Prediction_Paper.pdf  # Final empirical paper
+└── README.md
+```
 
-## Data & Feature Engineering
-* **Source:** 1990 Bay Area Travel Survey.
-* **Preprocessing:** Handled categorical variables for travel mode (car, motorcycle, carpool) and home/work county locations.
-* **Interactions:** In the parametric models, I engineered interaction terms for work/home county pairs to capture spatial friction across the Bay Area.
-* **Outlier Management:** Log-transformed commute durations were evaluated to stabilize variance, though raw duration was the final target for interpretability.
+**To run:**
+```bash
+pip install pandas numpy scikit-learn xgboost
+cd code
+python main.py        # Runs XGBoost, prints accuracy, saves results_interpreted.csv
+python models.py      # Runs Lasso, Ridge, and Random Forest comparison
+```
 
-## Key Findings
-* **The "Carpool" Surprise:** Contrary to the hypothesis that coordinating pickups would significantly increase trip time, the models found carpooling was only associated with a **~3.5 minute increase**, holding all else constant. 
-* **Spatial Friction:** The home-work county interactions were the strongest predictors, highlighting the heavy influence of regional geography over individual demographic characteristics.
-* **Bias-Variance Tradeoff:** The superior performance of the ensemble method highlights a clear tradeoff: while Lasso/Ridge offered high interpretability of coefficients, Random Forest offered significantly higher predictive utility by capturing latent interactions.
+---
+
+## Data
+
+**Source:** 1990 Bay Area Travel Survey, published by the Metropolitan Transportation Commission. The dataset contains individual-level trip records including origin/destination times, travel mode, county of residence and employment, vehicle type, and demographic characteristics.
+
+**Preprocessing decisions:**
+- Restricted to work-purpose destination trips (`dpurp == 1`)
+- Commute window: 20–150 minutes (removes extreme outliers and non-standard commutes)
+- Age capped at 100 to remove data entry errors
+- Log transformation applied to commute duration to stabilize variance
+
+---
 
 ## Tech Stack
-* **Python:** Core programming environment.
-* **Scikit-Learn:** Used for Lasso, Ridge, and Random Forest implementations.
-* **Pandas/NumPy:** Data manipulation and feature engineering.
+
+Python, `scikit-learn`, `xgboost`, `pandas`, `numpy`, `matplotlib`
