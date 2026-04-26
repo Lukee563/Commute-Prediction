@@ -61,8 +61,8 @@ The 40+ percentage point gap between linear and gradient-boosted models indicate
 │   ├── XGBoost.py                # XGBoost model definition and training
 │   ├── models.py                 # Lasso, Ridge, and Random Forest comparison
 │   ├── regression.py             # Baseline linear regression
-│   ├── eda.py                    # Exploratory data analysis and scatter plots
-│   └── results_interpreted.csv  # XGBoost predictions on test set (actual vs. predicted minutes)
+│   └── eda.py                    # Exploratory data analysis and scatter plots
+├── results_interpreted.csv  # XGBoost predictions on test set (actual vs. predicted minutes)
 ├── Commute_Prediction_Paper.pdf  # Final empirical paper
 └── README.md
 ```
